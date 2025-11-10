@@ -1,0 +1,55 @@
+---
+import SimpleDashboard from '../components/SimpleDashboard';
+
+const googleMapsApiKey = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY || '';
+
+const user = Astro.locals.user ? {
+  id: Astro.locals.user.id,
+  name: Astro.locals.user.name,
+  email: Astro.locals.user.email,
+  role: Astro.locals.user.role,
+} : undefined;
+
+const organization = Astro.locals.organization ? {
+  id: Astro.locals.organization.id,
+  name: 'TREE SHOP LLC',
+} : undefined;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="TreeShop - Proposals Management" />
+    <title>Proposals - TreeShop</title>
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="theme-color" content="#000000" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <SimpleDashboard
+      googleMapsApiKey={googleMapsApiKey}
+      user={user}
+      organization={organization}
+      currentPage="proposals"
+      client:only="react"
+    />
+  </body>
+</html>
+
+<style is:global>
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background-color: #000000;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+</style>

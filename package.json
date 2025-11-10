@@ -1,0 +1,42 @@
+{
+  "name": "treeshop-saas",
+  "type": "module",
+  "version": "0.1.0",
+  "scripts": {
+    "dev": "astro dev",
+    "start": "astro dev",
+    "build": "astro check && astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "convex": "convex dev",
+    "convex:deploy": "convex deploy --prod"
+  },
+  "dependencies": {
+    "@astrojs/node": "^9.5.0",
+    "@astrojs/react": "^4.4.2",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.3.5",
+    "@mui/material": "^7.3.5",
+    "@mui/x-charts": "^8.17.0",
+    "@mui/x-data-grid": "^8.17.0",
+    "@mui/x-date-pickers": "^8.17.0",
+    "@mui/x-tree-view": "^8.17.0",
+    "@react-google-maps/api": "^2.20.7",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "@workos-inc/node": "^7.72.2",
+    "astro": "^5.15.4",
+    "convex": "^1.28.2",
+    "date-fns": "^4.1.0",
+    "dayjs": "^1.11.19",
+    "jose": "^6.1.1",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "recharts": "^3.3.0"
+  },
+  "devDependencies": {
+    "vite-plugin-pwa": "^1.1.0",
+    "workbox-window": "^7.3.0"
+  }
+}

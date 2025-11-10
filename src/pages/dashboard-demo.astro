@@ -1,0 +1,41 @@
+---
+import SimpleDashboard from '../components/SimpleDashboard';
+import { ConvexHttpClient } from 'convex/browser';
+import { api } from '../../convex/_generated/api';
+
+const googleMapsApiKey = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY;
+
+// Get user and organization from session
+const user = Astro.locals.user;
+const organizationId = Astro.locals.organization?.id;
+
+let organization = null;
+
+if (organizationId) {
+  const convex = new ConvexHttpClient(import.meta.env.PUBLIC_CONVEX_URL);
+  organization = await convex.query(api.organizations.getById, { id: organizationId });
+}
+---
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TreeShop Dashboard</title>
+  </head>
+  <body>
+    <SimpleDashboard
+      client:only="react"
+      googleMapsApiKey={googleMapsApiKey}
+      user={user ? {
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      } : undefined}
+      organization={organization ? {
+        name: organization.name,
+      } : undefined}
+    />
+  </body>
+</html>

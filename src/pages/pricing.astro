@@ -1,0 +1,16 @@
+---
+import Layout from '../layouts/Layout.astro';
+import PricingCalculator from '../components/Pricing/PricingCalculator';
+
+// Get session from middleware
+const session = Astro.locals.session;
+const organization = Astro.locals.organization;
+
+if (!session || !organization) {
+  return Astro.redirect('/sign-in');
+}
+---
+
+<Layout title="Pricing Calculator">
+  <PricingCalculator client:only="react" organizationId={organization.id} />
+</Layout>
