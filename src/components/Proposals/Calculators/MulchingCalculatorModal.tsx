@@ -19,7 +19,7 @@ import {
 import { Close, Map as MapIcon } from '@mui/icons-material';
 import { useQuery } from 'convex/react';
 import { api } from '../../../../convex/_generated/api';
-import { Id } from '../../../../convex/_generated/dataModel';
+import type { Id } from '../../../../convex/_generated/dataModel';
 import AFISSFactorPicker from '../AFISSFactorPicker';
 
 interface MulchingCalculatorModalProps {

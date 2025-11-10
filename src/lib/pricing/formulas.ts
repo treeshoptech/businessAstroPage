@@ -311,3 +311,377 @@ export const MINIMUM_HOURS = {
   stump_grinding: 2, // 2-hour minimum
   general: 0.5, // 30-minute minimum
 };
+
+// ============================================================================
+// TREE REMOVAL & TRIMMING FORMULAS (from iOS PricingFormulas.swift)
+// ============================================================================
+
+// Tree Removal Calculation
+export interface TreeInputs {
+  heightFeet: number;
+  dbhInches: number; // Diameter at Breast Height
+  canopyRadiusFeet: number;
+}
+
+export interface TreeScoreResult {
+  treeScore: number;
+  description: string;
+}
+
+/**
+ * Calculate TreeScore using exponential formula: H × (DBH÷12)² × CR²
+ * DBH is entered in inches but must be converted to feet for calculation
+ */
+export function calculateTreeScore(
+  height: number,
+  dbh: number,
+  canopyRadius: number
+): number {
+  const dbhInFeet = dbh / 12.0;
+  return height * (dbhInFeet * dbhInFeet) * (canopyRadius * canopyRadius);
+}
+
+/**
+ * Calculate TreeScore for a single tree with description
+ */
+export function calculateTreeRemoval(tree: TreeInputs): TreeScoreResult {
+  const score = calculateTreeScore(
+    tree.heightFeet,
+    tree.dbhInches,
+    tree.canopyRadiusFeet
+  );
+
+  const description = `${tree.heightFeet}' tall × ${tree.dbhInches}" DBH × ${tree.canopyRadiusFeet}' canopy = ${Math.round(score)} points`;
+
+  return { treeScore: score, description };
+}
+
+/**
+ * Calculate total TreeScore for multiple trees
+ */
+export function calculateMultiTreeRemoval(
+  trees: TreeInputs[],
+  productionRate: number = 250
+): { totalScore: number; productionHours: number } {
+  const totalScore = trees.reduce((sum, tree) => {
+    return (
+      sum +
+      calculateTreeScore(tree.heightFeet, tree.dbhInches, tree.canopyRadiusFeet)
+    );
+  }, 0);
+
+  const hours = productionRate > 0 ? totalScore / productionRate : 0;
+
+  return { totalScore, hours };
+}
+
+// Tree Trimming Calculation
+export interface TreeTrimmingResult {
+  trimScore: number;
+  fullTreeScore: number;
+  trimPercentage: number;
+  description: string;
+}
+
+/**
+ * Calculate TrimScore for tree trimming jobs
+ * @param tree - Tree measurements
+ * @param trimPercentage - Percentage of canopy being removed (0.0 - 1.0)
+ */
+export function calculateTreeTrimming(
+  tree: TreeInputs,
+  trimPercentage: number
+): TreeTrimmingResult {
+  const fullScore = calculateTreeScore(
+    tree.heightFeet,
+    tree.dbhInches,
+    tree.canopyRadiusFeet
+  );
+  const trimScore = fullScore * trimPercentage;
+
+  const description = `${tree.heightFeet}' tall × ${tree.dbhInches}" DBH × ${tree.canopyRadiusFeet}' canopy × ${Math.round(trimPercentage * 100)}% trim = ${Math.round(trimScore)} points`;
+
+  return {
+    trimScore,
+    fullTreeScore: fullScore,
+    trimPercentage,
+    description,
+  };
+}
+
+/**
+ * Calculate total trim work for multiple trees
+ */
+export function calculateMultiTreeTrimming(
+  trees: TreeInputs[],
+  trimPercentage: number,
+  productionRate: number = 250
+): { totalScore: number; productionHours: number } {
+  const totalScore = trees.reduce((sum, tree) => {
+    const fullScore = calculateTreeScore(
+      tree.heightFeet,
+      tree.dbhInches,
+      tree.canopyRadiusFeet
+    );
+    return sum + fullScore * trimPercentage;
+  }, 0);
+
+  const hours = productionRate > 0 ? totalScore / productionRate : 0;
+
+  return { totalScore, hours };
+}
+
+/**
+ * Get trim intensity factor from percentage
+ * Light (10-15%): 0.3, Medium (20-30%): 0.5, Heavy (40-50%): 0.8
+ */
+export function getTrimIntensityFactor(percentage: number): number {
+  if (percentage >= 0.1 && percentage <= 0.15) {
+    return 0.3;
+  } else if (percentage >= 0.2 && percentage <= 0.3) {
+    return 0.5;
+  } else if (percentage >= 0.4 && percentage <= 0.5) {
+    return 0.8;
+  }
+  return percentage; // Use actual percentage if not in standard range
+}
+
+// ============================================================================
+// ADVANCED LAND CLEARING - CLEARINGSCORE SYSTEM (from iOS)
+// ============================================================================
+
+export type ClearingDensity = "light" | "average" | "heavy";
+
+export interface ClearingScoreParams {
+  acres: number;
+  density: ClearingDensity;
+  afissMultiplier: number;
+}
+
+export interface ClearingScoreResult {
+  baseClearingScore: number;
+  adjustedClearingScore: number;
+  excavatorHours: number;
+  grubbingHours: number;
+  totalWorkHours: number;
+  excavatorDays: number;
+  grubbingDays: number;
+  totalDays: number;
+}
+
+/**
+ * Calculate ClearingScore for land clearing projects
+ * Base = Acres (1 acre = 1 ClearingScore point)
+ * Apply density and AFISS multipliers
+ */
+export function calculateClearingScore(
+  params: ClearingScoreParams
+): ClearingScoreResult {
+  const { acres, density, afissMultiplier } = params;
+
+  // Density multipliers
+  const densityMultiplier =
+    density === "light" ? 0.7 : density === "average" ? 1.0 : 1.3;
+
+  // Base = Acres (1 acre = 1 ClearingScore point)
+  const baseScore = acres;
+
+  // Apply density and AFISS multipliers
+  const adjustedScore = baseScore * densityMultiplier * afissMultiplier;
+
+  // Work Hours
+  // Excavator: 16 hours per ClearingScore point (2 days × 8 hrs)
+  // Grubbing: 8 hours per ClearingScore point (1 day × 8 hrs)
+  const excavatorHours = adjustedScore * 16.0;
+  const grubbingHours = adjustedScore * 8.0;
+  const totalWorkHours = excavatorHours + grubbingHours;
+
+  // Convert to Days for Display (scheduling)
+  const excavatorDays = Math.ceil(excavatorHours / 8.0);
+  const grubbingDays = Math.ceil(grubbingHours / 8.0);
+  const totalDays = Math.ceil(totalWorkHours / 8.0);
+
+  return {
+    baseClearingScore: baseScore,
+    adjustedClearingScore: adjustedScore,
+    excavatorHours,
+    grubbingHours,
+    totalWorkHours,
+    excavatorDays,
+    grubbingDays,
+    totalDays,
+  };
+}
+
+export interface ClearingPricingParams {
+  clearingScore: ClearingScoreResult;
+  excavatorLoadoutCostPerHour: number;
+  excavatorRentalCostPerHour: number; // e.g., $1500/day ÷ 8 hrs = $187.50/hr
+  grubbingLoadoutCostPerHour: number;
+  truckLoads: number; // Debris removal (default: acres × 2.5)
+  costPerTruckLoad: number; // Default: $700
+  excavatorMargin: number; // 0.50 = 50%
+  grubbingMargin: number; // 0.50 = 50%
+  debrisMargin: number; // 0.50 = 50%
+}
+
+export interface ClearingPricingResult {
+  // Excavator Phase
+  excavatorEquipmentCost: number;
+  excavatorRentalCost: number;
+  excavatorTotalCost: number;
+  excavatorPrice: number;
+
+  // Grubbing Phase
+  grubbingCost: number;
+  grubbingPrice: number;
+
+  // Debris Removal
+  debrisCost: number;
+  debrisPrice: number;
+
+  // Totals
+  totalCost: number;
+  totalPrice: number;
+  totalProfit: number;
+  profitMargin: number;
+}
+
+/**
+ * Calculate two-phase land clearing pricing with debris removal
+ */
+export function calculateClearingPricing(
+  params: ClearingPricingParams
+): ClearingPricingResult {
+  const {
+    clearingScore,
+    excavatorLoadoutCostPerHour,
+    excavatorRentalCostPerHour,
+    grubbingLoadoutCostPerHour,
+    truckLoads,
+    costPerTruckLoad,
+    excavatorMargin,
+    grubbingMargin,
+    debrisMargin,
+  } = params;
+
+  // Excavator Phase Costs
+  const excavatorEquipmentCost =
+    clearingScore.excavatorHours * excavatorLoadoutCostPerHour;
+  const excavatorRentalCost =
+    clearingScore.excavatorHours * excavatorRentalCostPerHour;
+  const excavatorTotalCost = excavatorEquipmentCost + excavatorRentalCost;
+
+  // Grubbing Phase Costs
+  const grubbingCost = clearingScore.grubbingHours * grubbingLoadoutCostPerHour;
+
+  // Debris Removal Costs
+  const debrisCost = truckLoads * costPerTruckLoad;
+
+  // Total Costs
+  const totalCost = excavatorTotalCost + grubbingCost + debrisCost;
+
+  // Calculate Prices (using margin formula: Price = Cost ÷ (1 - Margin))
+  const excavatorPrice =
+    excavatorMargin < 1.0
+      ? excavatorTotalCost / (1 - excavatorMargin)
+      : excavatorTotalCost;
+  const grubbingPrice =
+    grubbingMargin < 1.0 ? grubbingCost / (1 - grubbingMargin) : grubbingCost;
+  const debrisPrice =
+    debrisMargin < 1.0 ? debrisCost / (1 - debrisMargin) : debrisCost;
+
+  // Total Price and Profit
+  const totalPrice = excavatorPrice + grubbingPrice + debrisPrice;
+  const totalProfit = totalPrice - totalCost;
+  const profitMargin = totalPrice > 0 ? totalProfit / totalPrice : 0;
+
+  return {
+    excavatorEquipmentCost,
+    excavatorRentalCost,
+    excavatorTotalCost,
+    excavatorPrice,
+    grubbingCost,
+    grubbingPrice,
+    debrisCost,
+    debrisPrice,
+    totalCost,
+    totalPrice,
+    totalProfit,
+    profitMargin,
+  };
+}
+
+/**
+ * Helper: Estimate truck loads from acreage
+ */
+export function estimateTruckLoads(
+  acres: number,
+  loadsPerAcre: number = 2.5
+): number {
+  return Math.ceil(acres * loadsPerAcre);
+}
+
+// ============================================================================
+// HYDRAULIC FLOW PRODUCTION RATE (from iOS)
+// ============================================================================
+
+/**
+ * Calculate mulching production rate from hydraulic flow (GPM)
+ * Formula: R = (Q/30)^1.58 where Q = GPM
+ * Based on TreeShop research: https://www.treeshop.app/articles/12
+ * Benchmarks: 30 GPM = 1.0 PpH, 34 GPM = 1.3 PpH, 40 GPM = 2.0 PpH
+ */
+export function calculateProductionRateFromGPM(gpm: number): number {
+  return Math.pow(gpm / 30.0, 1.58);
+}
+
+// ============================================================================
+// UTILITY FUNCTIONS (from iOS)
+// ============================================================================
+
+/**
+ * Format currency values
+ */
+export function formatCurrency(value: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
+/**
+ * Format hours display
+ */
+export function formatHours(hours: number): string {
+  return `${hours.toFixed(1)} hrs`;
+}
+
+/**
+ * Format miles display
+ */
+export function formatMiles(miles: number): string {
+  return `${miles.toFixed(1)} mi`;
+}
+
+/**
+ * Format percentage display
+ */
+export function formatPercentage(value: number): string {
+  return `${(value * 100).toFixed(1)}%`;
+}
+
+/**
+ * Format score with K/M notation
+ */
+export function formatScore(score: number): string {
+  if (score >= 1_000_000) {
+    return `${(score / 1_000_000).toFixed(2)}M`;
+  } else if (score >= 1_000) {
+    return `${(score / 1_000).toFixed(1)}K`;
+  } else {
+    return score.toFixed(0);
+  }
+}

@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
-import TextField, { TextFieldProps } from '@mui/material/TextField';
+import TextField from '@mui/material/TextField';
+import type { TextFieldProps } from '@mui/material/TextField';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
 import { loadGoogleMapsAPI } from '../../lib/googleMapsLoader';

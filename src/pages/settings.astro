@@ -1,14 +1,5 @@
 ---
-import SimpleDashboard from '../components/SimpleDashboard';
-
-const googleMapsApiKey = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY || '';
-
-const user = Astro.locals.user ? {
-  id: Astro.locals.user.id,
-  name: Astro.locals.user.name,
-  email: Astro.locals.user.email,
-  role: Astro.locals.user.role,
-} : undefined;
+import SettingsPage from '../components/Settings/SettingsPage';
 
 const organization = Astro.locals.organization ? {
   id: Astro.locals.organization.id,
@@ -31,11 +22,8 @@ const organization = Astro.locals.organization ? {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   </head>
   <body>
-    <SimpleDashboard
-      googleMapsApiKey={googleMapsApiKey}
-      user={user}
+    <SettingsPage
       organization={organization}
-      currentPage="settings"
       client:only="react"
     />
   </body>

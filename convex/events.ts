@@ -134,6 +134,21 @@ export const getByUser = query({
   },
 });
 
+// List all events for an organization (alias for getRecent)
+export const list = query({
+  args: {
+    organizationId: v.id("organizations"),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, { organizationId, limit = 50 }) => {
+    return await ctx.db
+      .query("events")
+      .withIndex("by_org_timestamp", (q) => q.eq("organizationId", organizationId))
+      .order("desc")
+      .take(limit);
+  },
+});
+
 // Get recent events (activity feed)
 export const getRecent = query({
   args: {

@@ -68,109 +68,60 @@ export default function AppDrawer({ open, onClose, currentPath = '/' }: AppDrawe
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
   const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
 
-  // Navigation structure
+  // Navigation structure - Workflow focused
   const primaryNav: NavItem[] = [
     {
       id: 'dashboard',
       label: 'Dashboard',
-      path: '/app/dashboard',
+      path: '/',
     },
     {
-      id: 'map',
-      label: 'Map View',
-      path: '/app/map',
+      id: 'customers',
+      label: 'Customers',
+      path: '/customers',
+    },
+    {
+      id: 'calendar',
+      label: 'Calendar',
+      path: '/schedule',
+    },
+    {
+      id: 'leads',
+      label: 'Leads',
+      path: '/leads',
+      badge: 12,
+    },
+    {
+      id: 'proposals',
+      label: 'Proposals',
+      path: '/proposals',
+      badge: 8,
+    },
+    {
+      id: 'work-orders',
+      label: 'Work Orders',
+      path: '/work-orders',
+      badge: 5,
+    },
+    {
+      id: 'invoices',
+      label: 'Invoices',
+      path: '/invoices',
+      badge: 3,
     },
   ];
 
   const sections: NavSection[] = [
     {
-      id: 'pipeline',
-      label: 'PIPELINE',
-      icon: <TimelineIcon />,
-      badge: 12,
-      expandable: true,
-      items: [
-        { id: 'leads', label: 'Leads', path: '/app/pipeline/leads', badge: 12 },
-        { id: 'proposals', label: 'Proposals', path: '/app/pipeline/proposals', badge: 8 },
-        { id: 'work-orders', label: 'Work Orders', path: '/app/pipeline/work-orders', badge: 5 },
-        { id: 'invoices', label: 'Invoices', path: '/app/pipeline/invoices', badge: 3 },
-      ],
-    },
-    {
-      id: 'directories',
-      label: 'DIRECTORIES',
-      icon: <FolderIcon />,
-      badge: 142,
-      expandable: true,
-      items: [
-        { id: 'customers', label: 'Customers', path: '/app/directories/customers', badge: 142 },
-        { id: 'equipment', label: 'Equipment', path: '/app/directories/equipment', badge: 8 },
-        { id: 'employees', label: 'Employees', path: '/app/directories/employees', badge: 6 },
-        { id: 'loadouts', label: 'Loadouts', path: '/app/directories/loadouts', badge: 5 },
-      ],
-    },
-    {
-      id: 'pricing',
-      label: 'PRICING',
-      icon: <AttachMoneyIcon />,
-      expandable: true,
-      items: [
-        {
-          id: 'calculators',
-          label: 'Calculators',
-          path: '/app/pricing/calculators',
-          expandable: true,
-          items: [
-            { id: 'mulching', label: 'Forestry Mulching', path: '/app/pricing/calculators/mulching' },
-            { id: 'stump', label: 'Stump Grinding', path: '/app/pricing/calculators/stump-grinding' },
-            { id: 'land', label: 'Land Clearing', path: '/app/pricing/calculators/land-clearing' },
-            { id: 'removal', label: 'Tree Removal', path: '/app/pricing/calculators/tree-removal' },
-            { id: 'trimming', label: 'Tree Trimming', path: '/app/pricing/calculators/tree-trimming' },
-          ],
-        },
-        { id: 'line-items', label: 'Line Items', path: '/app/pricing/line-items', badge: 5 },
-        { id: 'afiss', label: 'AFISS Factors', path: '/app/pricing/afiss', badge: 80 },
-        { id: 'history', label: 'Pricing History', path: '/app/pricing/history' },
-      ],
-    },
-    {
-      id: 'analytics',
-      label: 'ANALYTICS',
-      icon: <BarChartIcon />,
-      badge: 3,
-      expandable: true,
-      items: [
-        {
-          id: 'reports',
-          label: 'Reports',
-          path: '/app/analytics/reports',
-          expandable: true,
-          items: [
-            { id: 'financial', label: 'Financial Reports', path: '/app/analytics/reports/financial' },
-            { id: 'operational', label: 'Operational Reports', path: '/app/analytics/reports/operational' },
-            { id: 'assets', label: 'Asset Reports', path: '/app/analytics/reports/assets' },
-            { id: 'customers', label: 'Customer Reports', path: '/app/analytics/reports/customers' },
-            { id: 'services', label: 'Service Reports', path: '/app/analytics/reports/services' },
-            { id: 'custom', label: 'Custom Builder', path: '/app/analytics/reports/custom' },
-            { id: 'saved', label: 'Saved Reports', path: '/app/analytics/reports/saved' },
-          ],
-        },
-        { id: 'performance', label: 'Performance', path: '/app/analytics/performance' },
-        { id: 'kpis', label: 'KPIs', path: '/app/analytics/kpis' },
-        { id: 'alerts', label: 'Alerts', path: '/app/analytics/alerts', badge: 3 },
-      ],
-    },
-    {
-      id: 'operations',
-      label: 'OPERATIONS',
+      id: 'management',
+      label: 'MANAGEMENT',
       icon: <BuildIcon />,
-      badge: 2,
       expandable: true,
       items: [
-        { id: 'time-tracking', label: 'Time Tracking', path: '/app/operations/time-tracking', badge: 2 },
-        { id: 'photos', label: 'Photo Gallery', path: '/app/operations/photos' },
-        { id: 'logs', label: 'Daily Logs', path: '/app/operations/logs' },
-        { id: 'schedule', label: 'Schedule', path: '/app/operations/schedule' },
+        { id: 'equipment', label: 'Equipment', path: '/equipment' },
+        { id: 'employees', label: 'Employees', path: '/employees' },
+        { id: 'loadouts', label: 'Loadouts', path: '/loadouts' },
+        { id: 'analytics', label: 'Reporting', path: '/analytics' },
       ],
     },
   ];
@@ -179,7 +130,7 @@ export default function AppDrawer({ open, onClose, currentPath = '/' }: AppDrawe
     {
       id: 'settings',
       label: 'Settings',
-      path: '/app/settings',
+      path: '/settings',
     },
     {
       id: 'help',

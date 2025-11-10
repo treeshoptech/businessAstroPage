@@ -1,22 +1,7 @@
 ---
-import SimpleDashboard from '../components/SimpleDashboard';
+import HomePage from '../components/HomePage';
 
 const googleMapsApiKey = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY || '';
-
-// Get user and organization from session (added by middleware)
-console.log('Astro.locals:', Astro.locals);
-
-const user = Astro.locals.user ? {
-  id: Astro.locals.user.id,
-  name: Astro.locals.user.name,
-  email: Astro.locals.user.email,
-  role: Astro.locals.user.role,
-} : {
-  id: 'test-user-id',
-  name: 'Test User',
-  email: 'test@example.com',
-  role: 'owner'
-};
 
 const organization = Astro.locals.organization ? {
   id: Astro.locals.organization.id,
@@ -42,9 +27,8 @@ const organization = Astro.locals.organization ? {
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
   </head>
   <body>
-    <SimpleDashboard
+    <HomePage
       googleMapsApiKey={googleMapsApiKey}
-      user={user}
       organization={organization}
       client:only="react"
     />

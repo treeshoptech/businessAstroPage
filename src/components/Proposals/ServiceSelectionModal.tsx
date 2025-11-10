@@ -7,210 +7,232 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Typography,
-  Box,
   IconButton,
+  Box,
+  Typography,
 } from '@mui/material';
-import { Close } from '@mui/icons-material';
-import { Id } from '../../../convex/_generated/dataModel';
+import CloseIcon from '@mui/icons-material/Close';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import ForestIcon from '@mui/icons-material/Forest';
+import LandscapeIcon from '@mui/icons-material/Landscape';
+import ContentCutIcon from '@mui/icons-material/ContentCut';
+import ParkIcon from '@mui/icons-material/Park';
+import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
+
+// Import calculator modals
 import MulchingCalculatorModal from './Calculators/MulchingCalculatorModal';
 import StumpGrindingCalculatorModal from './Calculators/StumpGrindingCalculatorModal';
 import LandClearingCalculatorModal from './Calculators/LandClearingCalculatorModal';
 import TreeRemovalCalculatorModal from './Calculators/TreeRemovalCalculatorModal';
 import TreeTrimmingCalculatorModal from './Calculators/TreeTrimmingCalculatorModal';
 
+import type { PricingCalculationResult } from '../../lib/pricing/formulas';
+
 interface ServiceSelectionModalProps {
   open: boolean;
   onClose: () => void;
+  onServiceAdded: (lineItem: PricingCalculationResult) => void;
+  propertyAddress?: string;
+  driveTimeMinutes?: number;
   organizationId: string;
-  onLineItemAdded: (lineItem: any) => void;
-  propertyLatitude: number;
-  propertyLongitude: number;
-  orgLatitude: number;
-  orgLongitude: number;
 }
 
-interface ServiceType {
-  id: string;
-  icon: string;
-  name: string;
-  description: string;
-}
+type ServiceType = 'mulching' | 'stump-grinding' | 'land-clearing' | 'tree-removal' | 'tree-trimming';
 
-const serviceTypes: ServiceType[] = [
+const services = [
   {
-    id: 'forestry-mulching',
-    icon: '🌲',
-    name: 'Forestry Mulching',
-    description: 'Clear vegetation up to 8" diameter using specialized mulching equipment',
+    type: 'mulching' as ServiceType,
+    icon: <ForestIcon />,
+    title: 'Forestry Mulching',
+    description: 'Clear vegetation by acreage and DBH',
+    color: '#4CAF50',
   },
   {
-    id: 'stump-grinding',
-    icon: '🪵',
-    name: 'Stump Grinding',
-    description: 'Professional stump grinding and removal below grade level',
+    type: 'stump-grinding' as ServiceType,
+    icon: <DeleteSweepIcon />,
+    title: 'Stump Grinding',
+    description: 'Grind stumps with diameter and depth',
+    color: '#FF9800',
   },
   {
-    id: 'land-clearing',
-    icon: '🌳',
-    name: 'Land Clearing',
-    description: 'Complete land clearing for residential and commercial projects',
+    type: 'land-clearing' as ServiceType,
+    icon: <LandscapeIcon />,
+    title: 'Land Clearing',
+    description: 'Clear lots by project type and intensity',
+    color: '#FFC107',
   },
   {
-    id: 'tree-removal',
-    icon: '🌳',
-    name: 'Tree Removal',
-    description: 'Safe removal of trees with professional climbing and rigging',
+    type: 'tree-removal' as ServiceType,
+    icon: <ParkIcon />,
+    title: 'Tree Removal',
+    description: 'Remove trees from inventory with AFISS',
+    color: '#F44336',
   },
   {
-    id: 'tree-trimming',
-    icon: '✂️',
-    name: 'Tree Trimming',
-    description: 'Professional pruning and trimming to improve tree health and appearance',
+    type: 'tree-trimming' as ServiceType,
+    icon: <ContentCutIcon />,
+    title: 'Tree Trimming',
+    description: 'Trim trees with adjustable intensity',
+    color: '#2196F3',
   },
 ];
 
 export default function ServiceSelectionModal({
   open,
   onClose,
+  onServiceAdded,
+  propertyAddress,
+  driveTimeMinutes,
   organizationId,
-  onLineItemAdded,
-  propertyLatitude,
-  propertyLongitude,
-  orgLatitude,
-  orgLongitude,
 }: ServiceSelectionModalProps) {
-  const [selectedService, setSelectedService] = useState<string | null>(null);
+  const [selectedService, setSelectedService] = useState<ServiceType | null>(null);
+  const [calculatorOpen, setCalculatorOpen] = useState(false);
 
-  const handleServiceSelect = (serviceId: string) => {
-    setSelectedService(serviceId);
+  const handleServiceSelect = (serviceType: ServiceType) => {
+    setSelectedService(serviceType);
+    setCalculatorOpen(true);
   };
 
   const handleCalculatorClose = () => {
+    setCalculatorOpen(false);
     setSelectedService(null);
   };
 
-  const handleLineItemComplete = (lineItem: any) => {
-    onLineItemAdded(lineItem);
-    setSelectedService(null);
-    onClose();
+  const handleServiceCalculated = (result: PricingCalculationResult) => {
+    onServiceAdded(result);
+    handleCalculatorClose();
+    onClose(); // Close service selection after adding
   };
 
   return (
     <>
       <Dialog
-        open={open && !selectedService}
+        open={open && !calculatorOpen}
         onClose={onClose}
         maxWidth="sm"
         fullWidth
+        PaperProps={{
+          sx: {
+            bgcolor: 'background.paper',
+            borderRadius: 2,
+          },
+        }}
       >
-        <DialogTitle>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <DialogTitle sx={{ pb: 1 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <Typography variant="h6" sx={{ fontWeight: 700 }}>
-              Select Service
+              Add Service
             </Typography>
             <IconButton onClick={onClose} size="small">
-              <Close />
+              <CloseIcon />
             </IconButton>
           </Box>
+          <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+            Select a service type to add to this proposal
+          </Typography>
         </DialogTitle>
 
-        <DialogContent sx={{ p: 0 }}>
-          <List sx={{ py: 0 }}>
-            {serviceTypes.map((service, index) => (
-              <React.Fragment key={service.id}>
-                <ListItemButton
-                  onClick={() => handleServiceSelect(service.id)}
+        <DialogContent sx={{ pt: 2 }}>
+          <List sx={{ p: 0 }}>
+            {services.map((service) => (
+              <ListItemButton
+                key={service.type}
+                onClick={() => handleServiceSelect(service.type)}
+                sx={{
+                  mb: 1,
+                  borderRadius: 2,
+                  border: '1px solid',
+                  borderColor: 'divider',
+                  transition: 'all 0.2s',
+                  '&:hover': {
+                    borderColor: service.color,
+                    bgcolor: `${service.color}10`,
+                  },
+                }}
+              >
+                <ListItemIcon
                   sx={{
-                    py: 2.5,
-                    px: 3,
-                    '&:hover': {
-                      bgcolor: 'action.hover',
-                    },
+                    minWidth: 48,
+                    color: service.color,
+                    '& svg': { fontSize: 32 },
                   }}
                 >
-                  <ListItemIcon sx={{ minWidth: 56 }}>
-                    <Typography variant="h4" sx={{ fontSize: '2rem' }}>
-                      {service.icon}
+                  {service.icon}
+                </ListItemIcon>
+                <ListItemText
+                  primary={
+                    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                      {service.title}
                     </Typography>
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={
-                      <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 0.5 }}>
-                        {service.name}
-                      </Typography>
-                    }
-                    secondary={
-                      <Typography variant="body2" color="text.secondary">
-                        {service.description}
-                      </Typography>
-                    }
-                  />
-                </ListItemButton>
-                {index < serviceTypes.length - 1 && (
-                  <Box sx={{ borderBottom: 1, borderColor: 'divider', mx: 3 }} />
-                )}
-              </React.Fragment>
+                  }
+                  secondary={
+                    <Typography variant="body2" color="text.secondary">
+                      {service.description}
+                    </Typography>
+                  }
+                />
+                <ChevronRightIcon sx={{ color: 'text.secondary' }} />
+              </ListItemButton>
             ))}
           </List>
         </DialogContent>
       </Dialog>
 
       {/* Calculator Modals */}
-      <MulchingCalculatorModal
-        open={selectedService === 'forestry-mulching'}
-        onClose={handleCalculatorClose}
-        organizationId={organizationId}
-        onLineItemAdded={handleLineItemComplete}
-        propertyLatitude={propertyLatitude}
-        propertyLongitude={propertyLongitude}
-        orgLatitude={orgLatitude}
-        orgLongitude={orgLongitude}
-      />
+      {selectedService === 'mulching' && (
+        <MulchingCalculatorModal
+          open={calculatorOpen}
+          onClose={handleCalculatorClose}
+          onCalculate={handleServiceCalculated}
+          propertyAddress={propertyAddress}
+          driveTimeMinutes={driveTimeMinutes}
+          organizationId={organizationId}
+        />
+      )}
 
-      <StumpGrindingCalculatorModal
-        open={selectedService === 'stump-grinding'}
-        onClose={handleCalculatorClose}
-        organizationId={organizationId}
-        onLineItemAdded={handleLineItemComplete}
-        propertyLatitude={propertyLatitude}
-        propertyLongitude={propertyLongitude}
-        orgLatitude={orgLatitude}
-        orgLongitude={orgLongitude}
-      />
+      {selectedService === 'stump-grinding' && (
+        <StumpGrindingCalculatorModal
+          open={calculatorOpen}
+          onClose={handleCalculatorClose}
+          onCalculate={handleServiceCalculated}
+          propertyAddress={propertyAddress}
+          driveTimeMinutes={driveTimeMinutes}
+          organizationId={organizationId}
+        />
+      )}
 
-      <LandClearingCalculatorModal
-        open={selectedService === 'land-clearing'}
-        onClose={handleCalculatorClose}
-        organizationId={organizationId}
-        onLineItemAdded={handleLineItemComplete}
-        propertyLatitude={propertyLatitude}
-        propertyLongitude={propertyLongitude}
-        orgLatitude={orgLatitude}
-        orgLongitude={orgLongitude}
-      />
+      {selectedService === 'land-clearing' && (
+        <LandClearingCalculatorModal
+          open={calculatorOpen}
+          onClose={handleCalculatorClose}
+          onCalculate={handleServiceCalculated}
+          propertyAddress={propertyAddress}
+          driveTimeMinutes={driveTimeMinutes}
+          organizationId={organizationId}
+        />
+      )}
 
-      <TreeRemovalCalculatorModal
-        open={selectedService === 'tree-removal'}
-        onClose={handleCalculatorClose}
-        organizationId={organizationId}
-        onLineItemAdded={handleLineItemComplete}
-        propertyLatitude={propertyLatitude}
-        propertyLongitude={propertyLongitude}
-        orgLatitude={orgLatitude}
-        orgLongitude={orgLongitude}
-      />
+      {selectedService === 'tree-removal' && (
+        <TreeRemovalCalculatorModal
+          open={calculatorOpen}
+          onClose={handleCalculatorClose}
+          onCalculate={handleServiceCalculated}
+          propertyAddress={propertyAddress}
+          driveTimeMinutes={driveTimeMinutes}
+          organizationId={organizationId}
+        />
+      )}
 
-      <TreeTrimmingCalculatorModal
-        open={selectedService === 'tree-trimming'}
-        onClose={handleCalculatorClose}
-        organizationId={organizationId}
-        onLineItemAdded={handleLineItemComplete}
-        propertyLatitude={propertyLatitude}
-        propertyLongitude={propertyLongitude}
-        orgLatitude={orgLatitude}
-        orgLongitude={orgLongitude}
-      />
+      {selectedService === 'tree-trimming' && (
+        <TreeTrimmingCalculatorModal
+          open={calculatorOpen}
+          onClose={handleCalculatorClose}
+          onCalculate={handleServiceCalculated}
+          propertyAddress={propertyAddress}
+          driveTimeMinutes={driveTimeMinutes}
+          organizationId={organizationId}
+        />
+      )}
     </>
   );
 }

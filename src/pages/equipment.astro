@@ -1,14 +1,5 @@
 ---
-import SimpleDashboard from '../components/SimpleDashboard';
-
-const googleMapsApiKey = import.meta.env.PUBLIC_GOOGLE_MAPS_API_KEY || '';
-
-const user = Astro.locals.user ? {
-  id: Astro.locals.user.id,
-  name: Astro.locals.user.name,
-  email: Astro.locals.user.email,
-  role: Astro.locals.user.role,
-} : undefined;
+import EquipmentPage from '../components/EquipmentPage';
 
 const organization = Astro.locals.organization ? {
   id: Astro.locals.organization.id,
@@ -34,11 +25,8 @@ const organization = Astro.locals.organization ? {
     />
   </head>
   <body>
-    <SimpleDashboard
-      googleMapsApiKey={googleMapsApiKey}
-      user={user}
+    <EquipmentPage
       organization={organization}
-      currentPage="equipment"
       client:only="react"
     />
   </body>
