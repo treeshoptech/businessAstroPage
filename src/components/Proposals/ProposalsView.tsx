@@ -20,6 +20,7 @@ import { api } from '../../../convex/_generated/api';
 import type { Id } from '../../../convex/_generated/dataModel';
 import AddLeadDialog from '../Projects/AddLeadDialog';
 import EditProjectDialog from '../Projects/EditProjectDialog';
+import ProposalBuilder from './ProposalBuilder';
 
 interface ProposalsViewProps {
   organizationId: string;
@@ -59,6 +60,7 @@ const serviceTypeLabels: Record<string, string> = {
 export default function ProposalsView({ organizationId }: ProposalsViewProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [proposalBuilderOpen, setProposalBuilderOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedProject, setSelectedProject] = useState<Project | null>(null);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -142,6 +144,20 @@ export default function ProposalsView({ organizationId }: ProposalsViewProps) {
     }
   };
 
+  // Show Proposal Builder in place of list view
+  if (proposalBuilderOpen) {
+    return (
+      <ProposalBuilder
+        organizationId={organizationId}
+        onBack={() => setProposalBuilderOpen(false)}
+        onSave={(proposalId) => {
+          setProposalBuilderOpen(false);
+          // Proposal saved successfully, list will auto-update via Convex
+        }}
+      />
+    );
+  }
+
   return (
     <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
@@ -163,7 +179,7 @@ export default function ProposalsView({ organizationId }: ProposalsViewProps) {
           <Button
             variant="contained"
             startIcon={<AddIcon />}
-            onClick={() => setAddDialogOpen(true)}
+            onClick={() => setProposalBuilderOpen(true)}
             size="small"
           >
             New Proposal
